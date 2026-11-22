@@ -98,12 +98,17 @@ def update_shanyrak(shanyrak_id: int, changes: dict):
         ).values(**changes))
     return get_shanyrak(shanyrak_id)
 
+
 def delete_shanyrak(shanyrak_id: int):
     with engine.begin() as conn:
-        result = conn.execute(shanyraks.delete().where(
-            shanyraks.c.shanyrak_id == shanyrak_id
-        ))
+        conn.execute(
+            comments.delete().where(comments.c.shanyrak_id == shanyrak_id)
+        )
+        result = conn.execute(
+            shanyraks.delete().where(shanyraks.c.shanyrak_id == shanyrak_id)
+        )
     return result.rowcount > 0
+
 
 def create_comment(shanyrak_id: int, author_id: int, content: str):
     with engine.begin() as conn:

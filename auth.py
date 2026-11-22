@@ -105,7 +105,6 @@ def register(user: UserRegister):
         raise HTTPException(status_code=409, detail="User already exists")
     return user_response(get_user_by_id(user_id))
 
-
 @router.post("/login", status_code=200)
 def login(form: OAuth2PasswordRequestForm = Depends()):
     user = get_user(form.username)
@@ -113,16 +112,19 @@ def login(form: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     return {"access_token": create_token(user.user_id), "token_type": "bearer"}
 
-
 @router.get("/me", response_model=UserResponse, status_code=200)
 def me(user=Depends(get_current_user)):
     return user_response(user)
-
-
 @router.patch("/me", response_model=UserResponse, status_code=200)
 def update_me(data: UserUpdate, user=Depends(get_current_user)):
     changes = data.model_dump(exclude_unset=True)
+
     if not changes:
         raise HTTPException(status_code=400, detail="No fields provided")
+
     if any(value is None for value in changes.values()):
         raise HTTPException(status_code=422, detail="Fields cannot be null")
+
+    updated_user = update_user(user.user_id, changes)
+    return user_response(updated_user)
+
